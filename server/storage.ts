@@ -1,6 +1,21 @@
-import { recipes, searchRequests, type Recipe, type InsertRecipe, type SearchRequest, type InsertSearchRequest, type RecipeSearchParams } from "@shared/schema";
+import { 
+  recipes, 
+  searchRequests, 
+  nutritionalGoals, 
+  mealEntries, 
+  type Recipe, 
+  type InsertRecipe, 
+  type SearchRequest, 
+  type InsertSearchRequest, 
+  type RecipeSearchParams,
+  type NutritionalGoal,
+  type InsertNutritionalGoal,
+  type MealEntry,
+  type InsertMealEntry,
+  type DailyNutritionSummary
+} from "@shared/schema";
 import { db } from "./db";
-import { eq, and, gte, lte, ilike, or } from "drizzle-orm";
+import { eq, and, gte, lte, ilike, or, sql } from "drizzle-orm";
 
 export interface IStorage {
   // Recipe operations
@@ -11,6 +26,17 @@ export interface IStorage {
   
   // Search request operations
   createSearchRequest(request: InsertSearchRequest): Promise<SearchRequest>;
+  
+  // Nutritional goal operations
+  getNutritionalGoal(userId?: string): Promise<NutritionalGoal | undefined>;
+  createNutritionalGoal(goal: InsertNutritionalGoal): Promise<NutritionalGoal>;
+  updateNutritionalGoal(userId: string, goal: Partial<InsertNutritionalGoal>): Promise<NutritionalGoal>;
+  
+  // Meal entry operations
+  createMealEntry(entry: InsertMealEntry): Promise<MealEntry>;
+  getMealEntriesForDate(date: string, userId?: string): Promise<MealEntry[]>;
+  getDailyNutritionSummary(date: string, userId?: string): Promise<DailyNutritionSummary>;
+  deleteMealEntry(id: number): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -88,6 +114,111 @@ export class DatabaseStorage implements IStorage {
       })
       .returning();
     return newRequest;
+  }
+
+  async getNutritionalGoal(userId: string = "default_user"): Promise<NutritionalGoal | undefined> {
+    const [goal] = await db
+      .select()
+      .from(nutritionalGoals)
+      .where(eq(nutritionalGoals.userId, userId))
+      .orderBy(sql`${nutritionalGoals.updatedAt} DESC`)
+      .limit(1);
+    return goal || undefined;
+  }
+
+  async createNutritionalGoal(goal: InsertNutritionalGoal): Promise<NutritionalGoal> {
+    const [newGoal] = await db
+      .insert(nutritionalGoals)
+      .values({
+        ...goal,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      })
+      .returning();
+    return newGoal;
+  }
+
+  async updateNutritionalGoal(userId: string, goalUpdate: Partial<InsertNutritionalGoal>): Promise<NutritionalGoal> {
+    const [updatedGoal] = await db
+      .update(nutritionalGoals)
+      .set({
+        ...goalUpdate,
+        updatedAt: new Date().toISOString(),
+      })
+      .where(eq(nutritionalGoals.userId, userId))
+      .returning();
+    return updatedGoal;
+  }
+
+  async createMealEntry(entry: InsertMealEntry): Promise<MealEntry> {
+    const [newEntry] = await db
+      .insert(mealEntries)
+      .values({
+        ...entry,
+        createdAt: new Date().toISOString(),
+      })
+      .returning();
+    return newEntry;
+  }
+
+  async getMealEntriesForDate(date: string, userId: string = "default_user"): Promise<MealEntry[]> {
+    return await db
+      .select()
+      .from(mealEntries)
+      .where(and(
+        eq(mealEntries.date, date),
+        eq(mealEntries.userId, userId)
+      ))
+      .orderBy(mealEntries.createdAt);
+  }
+
+  async getDailyNutritionSummary(date: string, userId: string = "default_user"): Promise<DailyNutritionSummary> {
+    // Get meal entries for the date
+    const mealEntriesForDate = await this.getMealEntriesForDate(date, userId);
+    
+    // Get nutritional goal
+    const goal = await this.getNutritionalGoal(userId);
+    
+    // Calculate totals from meal entries
+    let totalCalories = 0;
+    let totalProtein = 0;
+    let totalCarbs = 0;
+    let totalFat = 0;
+    let totalFiber = 0;
+    let totalSodium = 0;
+
+    for (const entry of mealEntriesForDate) {
+      const recipe = await this.getRecipe(entry.recipeId);
+      if (recipe) {
+        const servings = parseFloat(entry.servings);
+        totalCalories += recipe.nutrition.calories * servings;
+        totalProtein += recipe.nutrition.protein * servings;
+        totalCarbs += recipe.nutrition.carbs * servings;
+        totalFat += recipe.nutrition.fat * servings;
+        totalFiber += recipe.nutrition.fiber * servings;
+        totalSodium += recipe.nutrition.sodium * servings;
+      }
+    }
+
+    return {
+      date,
+      totalCalories: Math.round(totalCalories),
+      totalProtein: Math.round(totalProtein),
+      totalCarbs: Math.round(totalCarbs),
+      totalFat: Math.round(totalFat),
+      totalFiber: Math.round(totalFiber),
+      totalSodium: Math.round(totalSodium),
+      goalCalories: goal?.dailyCalories || 2000,
+      goalProtein: goal?.dailyProtein || 150,
+      goalCarbs: goal?.dailyCarbs || 250,
+      goalFat: goal?.dailyFat || 65,
+      goalFiber: goal?.dailyFiber || 25,
+      goalSodium: goal?.dailySodium || 2300,
+    };
+  }
+
+  async deleteMealEntry(id: number): Promise<void> {
+    await db.delete(mealEntries).where(eq(mealEntries.id, id));
   }
 }
 

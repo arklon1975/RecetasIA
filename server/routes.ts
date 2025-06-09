@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { recipeSearchSchema } from "@shared/schema";
+import { recipeSearchSchema, nutritionalGoalSchema, mealEntrySchema } from "@shared/schema";
 import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -68,6 +68,103 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ 
         message: "Error fetching recipe" 
       });
+    }
+  });
+
+  // Nutritional Goals API
+  app.get("/api/nutrition/goals", async (req, res) => {
+    try {
+      const userId = req.query.userId as string || "default_user";
+      const goal = await storage.getNutritionalGoal(userId);
+      res.json(goal);
+    } catch (error) {
+      res.status(500).json({ message: "Error fetching nutritional goals" });
+    }
+  });
+
+  app.post("/api/nutrition/goals", async (req, res) => {
+    try {
+      const goalData = nutritionalGoalSchema.parse(req.body);
+      const goal = await storage.createNutritionalGoal({
+        ...goalData,
+        userId: "default_user"
+      });
+      res.json(goal);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ message: "Invalid goal data", errors: error.errors });
+      } else {
+        res.status(500).json({ message: "Error creating nutritional goal" });
+      }
+    }
+  });
+
+  app.put("/api/nutrition/goals", async (req, res) => {
+    try {
+      const goalData = nutritionalGoalSchema.partial().parse(req.body);
+      const userId = "default_user";
+      const goal = await storage.updateNutritionalGoal(userId, goalData);
+      res.json(goal);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ message: "Invalid goal data", errors: error.errors });
+      } else {
+        res.status(500).json({ message: "Error updating nutritional goal" });
+      }
+    }
+  });
+
+  // Meal Entries API
+  app.post("/api/nutrition/meals", async (req, res) => {
+    try {
+      const mealData = mealEntrySchema.parse(req.body);
+      const meal = await storage.createMealEntry({
+        ...mealData,
+        userId: "default_user"
+      });
+      res.json(meal);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ message: "Invalid meal data", errors: error.errors });
+      } else {
+        res.status(500).json({ message: "Error creating meal entry" });
+      }
+    }
+  });
+
+  app.get("/api/nutrition/meals/:date", async (req, res) => {
+    try {
+      const date = req.params.date;
+      const userId = req.query.userId as string || "default_user";
+      const meals = await storage.getMealEntriesForDate(date, userId);
+      res.json(meals);
+    } catch (error) {
+      res.status(500).json({ message: "Error fetching meal entries" });
+    }
+  });
+
+  app.delete("/api/nutrition/meals/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid meal entry ID" });
+      }
+      await storage.deleteMealEntry(id);
+      res.json({ message: "Meal entry deleted successfully" });
+    } catch (error) {
+      res.status(500).json({ message: "Error deleting meal entry" });
+    }
+  });
+
+  // Daily Nutrition Summary API
+  app.get("/api/nutrition/summary/:date", async (req, res) => {
+    try {
+      const date = req.params.date;
+      const userId = req.query.userId as string || "default_user";
+      const summary = await storage.getDailyNutritionSummary(date, userId);
+      res.json(summary);
+    } catch (error) {
+      res.status(500).json({ message: "Error fetching daily nutrition summary" });
     }
   });
 

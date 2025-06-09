@@ -20,11 +20,8 @@ export default function Home() {
     queryKey: ["/api/recipes/search", searchParams],
     queryFn: async () => {
       if (!searchParams) return [];
-      console.log("Searching with params:", searchParams);
       const response = await apiRequest("POST", "/api/recipes/search", searchParams);
-      const data = await response.json();
-      console.log("Search results:", data);
-      return data;
+      return response.json();
     },
     enabled: !!searchParams,
   });
@@ -36,15 +33,6 @@ export default function Home() {
   });
 
   const displayRecipes = searchParams ? recipes : allRecipes;
-  
-  console.log("Display logic:", { 
-    searchParams, 
-    hasSearchParams: !!searchParams, 
-    recipesLength: recipes.length, 
-    allRecipesLength: allRecipes.length,
-    displayRecipesLength: displayRecipes.length,
-    isSearching
-  });
 
   const handleSearch = (params: RecipeSearchParams) => {
     setSearchParams({ ...params, sortBy });
