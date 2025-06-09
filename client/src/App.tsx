@@ -62,6 +62,7 @@ function Router() {
         <Route path="/nutrition" component={NutritionTracker} />
         <Route component={NotFound} />
       </Switch>
+      <FloatingTimer />
     </div>
   );
 }
