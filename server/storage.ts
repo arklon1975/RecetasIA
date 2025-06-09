@@ -115,7 +115,7 @@ export class DatabaseStorage implements IStorage {
   async createRecipe(recipe: InsertRecipe): Promise<Recipe> {
     const [newRecipe] = await db
       .insert(recipes)
-      .values(recipe)
+      .values(recipe as any)
       .returning();
     return newRecipe;
   }
@@ -251,7 +251,7 @@ export class DatabaseStorage implements IStorage {
   async createUserProfile(profile: InsertUserProfile): Promise<UserProfile> {
     const [newProfile] = await db
       .insert(userProfiles)
-      .values(profile)
+      .values(profile as any)
       .returning();
     return newProfile;
   }
@@ -259,7 +259,7 @@ export class DatabaseStorage implements IStorage {
   async updateUserProfile(userId: string, profileUpdate: Partial<InsertUserProfile>): Promise<UserProfile> {
     const [updatedProfile] = await db
       .update(userProfiles)
-      .set(profileUpdate)
+      .set(profileUpdate as any)
       .where(eq(userProfiles.userId, userId))
       .returning();
     return updatedProfile;

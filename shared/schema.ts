@@ -70,9 +70,9 @@ export const userProfiles = pgTable("user_profiles", {
   goal: text("goal", { 
     enum: ["Mantener peso", "Perder peso", "Ganar peso", "Ganar masa muscular"] 
   }).default("Mantener peso"),
-  restrictions: text("restrictions").array().default([]),
-  allergies: text("allergies").array().default([]),
-  preferences: text("preferences").array().default([]),
+  restrictions: json("restrictions").$type<string[]>().default([]),
+  allergies: json("allergies").$type<string[]>().default([]),
+  preferences: json("preferences").$type<string[]>().default([]),
   createdAt: text("created_at").notNull().default("now()"),
   updatedAt: text("updated_at").notNull().default("now()"),
 });
