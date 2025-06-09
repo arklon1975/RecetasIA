@@ -20,8 +20,11 @@ export default function Home() {
     queryKey: ["/api/recipes/search", searchParams],
     queryFn: async () => {
       if (!searchParams) return [];
+      console.log("Searching with params:", searchParams);
       const response = await apiRequest("POST", "/api/recipes/search", searchParams);
-      return response.json();
+      const data = await response.json();
+      console.log("Search results:", data);
+      return data;
     },
     enabled: !!searchParams,
   });
