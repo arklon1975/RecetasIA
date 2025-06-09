@@ -36,6 +36,15 @@ export default function Home() {
   });
 
   const displayRecipes = searchParams ? recipes : allRecipes;
+  
+  console.log("Display logic:", { 
+    searchParams, 
+    hasSearchParams: !!searchParams, 
+    recipesLength: recipes.length, 
+    allRecipesLength: allRecipes.length,
+    displayRecipesLength: displayRecipes.length,
+    isSearching
+  });
 
   const handleSearch = (params: RecipeSearchParams) => {
     setSearchParams({ ...params, sortBy });
