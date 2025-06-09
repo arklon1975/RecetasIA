@@ -10,9 +10,9 @@ import { apiRequest } from "@/lib/queryClient";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import type { DailyNutritionSummary, NutritionalGoal, MealEntry } from "@shared/schema";
-import NutritionGoalsForm from "@/components/NutritionGoalsForm";
-import AddMealModal from "@/components/AddMealModal";
-import MealEntryCard from "@/components/MealEntryCard";
+import NutritionGoalsForm from "../components/NutritionGoalsForm";
+import AddMealModal from "../components/AddMealModal";
+import MealEntryCard from "../components/MealEntryCard";
 
 export default function NutritionTracker() {
   const [selectedDate, setSelectedDate] = useState(format(new Date(), 'yyyy-MM-dd'));

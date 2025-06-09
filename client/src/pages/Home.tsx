@@ -13,7 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 export default function Home() {
   const [searchParams, setSearchParams] = useState<RecipeSearchParams | null>(null);
   const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
-  const [sortBy, setSortBy] = useState<string>("health");
+  const [sortBy, setSortBy] = useState<"difficulty" | "health" | "time" | "cost">("health");
 
   // Query for searching recipes
   const { data: recipes = [], isLoading: isSearching, error } = useQuery({
@@ -35,13 +35,14 @@ export default function Home() {
   const displayRecipes = searchParams ? recipes : allRecipes;
 
   const handleSearch = (params: RecipeSearchParams) => {
-    setSearchParams({ ...params, sortBy });
+    setSearchParams({ ...params, sortBy: sortBy as RecipeSearchParams["sortBy"] });
   };
 
   const handleSortChange = (newSortBy: string) => {
-    setSortBy(newSortBy);
+    const validSortBy = newSortBy as "difficulty" | "health" | "time" | "cost";
+    setSortBy(validSortBy);
     if (searchParams) {
-      setSearchParams({ ...searchParams, sortBy: newSortBy as RecipeSearchParams["sortBy"] });
+      setSearchParams({ ...searchParams, sortBy: validSortBy });
     }
   };
 
