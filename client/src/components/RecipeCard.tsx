@@ -1,8 +1,12 @@
+import { useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Recipe } from "@shared/schema";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Heart, Leaf, DollarSign, Clock, Star } from "lucide-react";
+import { apiRequest } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 
 interface RecipeCardProps {
   recipe: Recipe;
@@ -11,6 +15,38 @@ interface RecipeCardProps {
 
 export default function RecipeCard({ recipe, onViewRecipe }: RecipeCardProps) {
   const totalTime = recipe.prepTime + recipe.cookTime;
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  // Check if recipe is favorite
+  const { data: favoriteStatus } = useQuery({
+    queryKey: ["/api/favorites", recipe.id, "check"],
+    queryFn: async () => {
+      const response = await apiRequest("GET", `/api/favorites/${recipe.id}/check`);
+      const data = await response.json();
+      return data.isFavorite;
+    },
+  });
+
+  const favoriteMutation = useMutation({
+    mutationFn: async () => {
+      if (favoriteStatus) {
+        await apiRequest("DELETE", `/api/favorites/${recipe.id}`);
+      } else {
+        await apiRequest("POST", `/api/favorites/${recipe.id}`);
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/favorites", recipe.id, "check"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/favorites"] });
+      toast({
+        title: favoriteStatus ? "Eliminado de favoritos" : "Agregado a favoritos",
+        description: favoriteStatus 
+          ? "La receta ha sido eliminada de tus favoritos." 
+          : "La receta ha sido agregada a tus favoritos.",
+      });
+    },
+  });
   
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
@@ -108,12 +144,29 @@ export default function RecipeCard({ recipe, onViewRecipe }: RecipeCardProps) {
 
           <div className="flex items-center justify-between">
             <p className="text-sm text-neutral-600">{recipe.description}</p>
-            <Button 
-              onClick={onViewRecipe}
-              className="bg-primary-green hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
-            >
-              Ver Receta
-            </Button>
+            <div className="flex items-center space-x-2">
+              <Button 
+                onClick={onViewRecipe}
+                className="bg-primary-green hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+              >
+                Ver Receta
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => favoriteMutation.mutate()}
+                disabled={favoriteMutation.isPending}
+                className={`p-2 rounded-lg transition-colors ${
+                  favoriteStatus
+                    ? "text-red-500 hover:text-red-600 hover:bg-red-50"
+                    : "text-neutral-400 hover:text-red-500 hover:bg-red-50"
+                }`}
+              >
+                <Heart 
+                  className={`w-5 h-5 ${favoriteStatus ? "fill-current" : ""}`} 
+                />
+              </Button>
+            </div>
           </div>
         </div>
       </div>

@@ -4,9 +4,10 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
-import { ChefHat, Target } from "lucide-react";
+import { ChefHat, Target, User } from "lucide-react";
 import Home from "@/pages/Home";
 import NutritionTracker from "@/pages/NutritionTracker";
+import UserProfile from "@/pages/UserProfile";
 import NotFound from "@/pages/not-found";
 import FloatingTimer from "@/components/FloatingTimer";
 
@@ -45,6 +46,16 @@ function Navigation() {
                   Nutrición
                 </Button>
               </Link>
+
+              <Link href="/profile">
+                <Button
+                  variant={location === "/profile" ? "default" : "ghost"}
+                  className={location === "/profile" ? "bg-primary-green hover:bg-green-600 text-white" : ""}
+                >
+                  <User className="w-4 h-4 mr-2" />
+                  Perfil
+                </Button>
+              </Link>
             </div>
           </div>
         </div>
@@ -60,6 +71,7 @@ function Router() {
       <Switch>
         <Route path="/" component={Home} />
         <Route path="/nutrition" component={NutritionTracker} />
+        <Route path="/profile" component={UserProfile} />
         <Route component={NotFound} />
       </Switch>
       <FloatingTimer />
