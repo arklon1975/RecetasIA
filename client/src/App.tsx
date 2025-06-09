@@ -1,17 +1,67 @@
-import { Switch, Route } from "wouter";
+import { Switch, Route, Link, useLocation } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { Button } from "@/components/ui/button";
+import { ChefHat, Target } from "lucide-react";
 import Home from "@/pages/Home";
+import NutritionTracker from "@/pages/NutritionTracker";
 import NotFound from "@/pages/not-found";
+
+function Navigation() {
+  const [location] = useLocation();
+
+  return (
+    <nav className="bg-white border-b border-neutral-200 sticky top-0 z-50">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-16">
+          <div className="flex items-center space-x-8">
+            <Link href="/">
+              <div className="flex items-center space-x-2 text-xl font-bold text-primary-green cursor-pointer">
+                <ChefHat className="w-8 h-8" />
+                <span>RecetApp</span>
+              </div>
+            </Link>
+            
+            <div className="flex space-x-4">
+              <Link href="/">
+                <Button
+                  variant={location === "/" ? "default" : "ghost"}
+                  className={location === "/" ? "bg-primary-green hover:bg-green-600 text-white" : ""}
+                >
+                  <ChefHat className="w-4 h-4 mr-2" />
+                  Recetas
+                </Button>
+              </Link>
+              
+              <Link href="/nutrition">
+                <Button
+                  variant={location === "/nutrition" ? "default" : "ghost"}
+                  className={location === "/nutrition" ? "bg-primary-green hover:bg-green-600 text-white" : ""}
+                >
+                  <Target className="w-4 h-4 mr-2" />
+                  Nutrición
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+    </nav>
+  );
+}
 
 function Router() {
   return (
-    <Switch>
-      <Route path="/" component={Home} />
-      <Route component={NotFound} />
-    </Switch>
+    <div className="min-h-screen bg-neutral-50">
+      <Navigation />
+      <Switch>
+        <Route path="/" component={Home} />
+        <Route path="/nutrition" component={NutritionTracker} />
+        <Route component={NotFound} />
+      </Switch>
+    </div>
   );
 }
 

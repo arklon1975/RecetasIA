@@ -120,6 +120,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const mealData = mealEntrySchema.parse(req.body);
       const meal = await storage.createMealEntry({
         ...mealData,
+        servings: mealData.servings.toString(),
         userId: "default_user"
       });
       res.json(meal);
