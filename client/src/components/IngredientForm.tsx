@@ -142,12 +142,12 @@ export default function IngredientForm({ onSearch, isLoading }: IngredientFormPr
                     <FormItem>
                       <FormLabel className="text-xs text-neutral-400">Tiempo máximo</FormLabel>
                       <FormControl>
-                        <Select onValueChange={(value) => field.onChange(value ? parseInt(value) : undefined)}>
+                        <Select onValueChange={(value) => field.onChange(value === "none" ? undefined : parseInt(value))}>
                           <SelectTrigger className="w-full text-sm">
                             <SelectValue placeholder="Cualquiera" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="">Cualquiera</SelectItem>
+                            <SelectItem value="none">Cualquiera</SelectItem>
                             <SelectItem value="15">15 minutos</SelectItem>
                             <SelectItem value="30">30 minutos</SelectItem>
                             <SelectItem value="60">1 hora</SelectItem>
@@ -166,12 +166,12 @@ export default function IngredientForm({ onSearch, isLoading }: IngredientFormPr
                     <FormItem>
                       <FormLabel className="text-xs text-neutral-400">Dificultad</FormLabel>
                       <FormControl>
-                        <Select onValueChange={field.onChange}>
+                        <Select onValueChange={(value) => field.onChange(value === "none" ? undefined : value)}>
                           <SelectTrigger className="w-full text-sm">
                             <SelectValue placeholder="Cualquiera" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="">Cualquiera</SelectItem>
+                            <SelectItem value="none">Cualquiera</SelectItem>
                             <SelectItem value="Muy Fácil">Muy Fácil</SelectItem>
                             <SelectItem value="Fácil">Fácil</SelectItem>
                             <SelectItem value="Intermedio">Intermedio</SelectItem>
@@ -191,12 +191,12 @@ export default function IngredientForm({ onSearch, isLoading }: IngredientFormPr
                     <FormItem>
                       <FormLabel className="text-xs text-neutral-400">Presupuesto máximo</FormLabel>
                       <FormControl>
-                        <Select onValueChange={(value) => field.onChange(value ? parseFloat(value) : undefined)}>
+                        <Select onValueChange={(value) => field.onChange(value === "none" ? undefined : parseFloat(value))}>
                           <SelectTrigger className="w-full text-sm">
                             <SelectValue placeholder="Cualquiera" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="">Cualquiera</SelectItem>
+                            <SelectItem value="none">Cualquiera</SelectItem>
                             <SelectItem value="10">Menos de $10</SelectItem>
                             <SelectItem value="20">$10 - $20</SelectItem>
                             <SelectItem value="30">$20 - $30</SelectItem>
