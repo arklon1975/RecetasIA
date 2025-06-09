@@ -2,7 +2,9 @@ import {
   recipes, 
   searchRequests, 
   nutritionalGoals, 
-  mealEntries, 
+  mealEntries,
+  userProfiles,
+  favoriteRecipes,
   type Recipe, 
   type InsertRecipe, 
   type SearchRequest, 
@@ -12,7 +14,11 @@ import {
   type InsertNutritionalGoal,
   type MealEntry,
   type InsertMealEntry,
-  type DailyNutritionSummary
+  type DailyNutritionSummary,
+  type UserProfile,
+  type InsertUserProfile,
+  type FavoriteRecipe,
+  type InsertFavoriteRecipe
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, gte, lte, ilike, or, sql } from "drizzle-orm";
@@ -37,6 +43,17 @@ export interface IStorage {
   getMealEntriesForDate(date: string, userId?: string): Promise<MealEntry[]>;
   getDailyNutritionSummary(date: string, userId?: string): Promise<DailyNutritionSummary>;
   deleteMealEntry(id: number): Promise<void>;
+  
+  // User profile operations
+  getUserProfile(userId?: string): Promise<UserProfile | undefined>;
+  createUserProfile(profile: InsertUserProfile): Promise<UserProfile>;
+  updateUserProfile(userId: string, profile: Partial<InsertUserProfile>): Promise<UserProfile>;
+  
+  // Favorite recipe operations
+  getFavoriteRecipes(userId?: string): Promise<Recipe[]>;
+  addFavoriteRecipe(userId: string, recipeId: number): Promise<FavoriteRecipe>;
+  removeFavoriteRecipe(userId: string, recipeId: number): Promise<void>;
+  isRecipeFavorite(userId: string, recipeId: number): Promise<boolean>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -219,6 +236,100 @@ export class DatabaseStorage implements IStorage {
 
   async deleteMealEntry(id: number): Promise<void> {
     await db.delete(mealEntries).where(eq(mealEntries.id, id));
+  }
+
+  // User profile operations
+  async getUserProfile(userId: string = "default_user"): Promise<UserProfile | undefined> {
+    const [profile] = await db
+      .select()
+      .from(userProfiles)
+      .where(eq(userProfiles.userId, userId))
+      .limit(1);
+    return profile || undefined;
+  }
+
+  async createUserProfile(profile: InsertUserProfile): Promise<UserProfile> {
+    const [newProfile] = await db
+      .insert(userProfiles)
+      .values({
+        ...profile,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      })
+      .returning();
+    return newProfile;
+  }
+
+  async updateUserProfile(userId: string, profileUpdate: Partial<InsertUserProfile>): Promise<UserProfile> {
+    const [updatedProfile] = await db
+      .update(userProfiles)
+      .set({
+        ...profileUpdate,
+        updatedAt: new Date().toISOString(),
+      })
+      .where(eq(userProfiles.userId, userId))
+      .returning();
+    return updatedProfile;
+  }
+
+  // Favorite recipe operations
+  async getFavoriteRecipes(userId: string = "default_user"): Promise<Recipe[]> {
+    const favorites = await db
+      .select({
+        recipe: recipes,
+      })
+      .from(favoriteRecipes)
+      .innerJoin(recipes, eq(favoriteRecipes.recipeId, recipes.id))
+      .where(eq(favoriteRecipes.userId, userId));
+    
+    return favorites.map(f => f.recipe);
+  }
+
+  async addFavoriteRecipe(userId: string, recipeId: number): Promise<FavoriteRecipe> {
+    // Check if already exists
+    const existing = await db
+      .select()
+      .from(favoriteRecipes)
+      .where(and(
+        eq(favoriteRecipes.userId, userId),
+        eq(favoriteRecipes.recipeId, recipeId)
+      ))
+      .limit(1);
+
+    if (existing.length > 0) {
+      return existing[0];
+    }
+
+    const [favorite] = await db
+      .insert(favoriteRecipes)
+      .values({
+        userId,
+        recipeId,
+        createdAt: new Date().toISOString(),
+      })
+      .returning();
+    return favorite;
+  }
+
+  async removeFavoriteRecipe(userId: string, recipeId: number): Promise<void> {
+    await db
+      .delete(favoriteRecipes)
+      .where(and(
+        eq(favoriteRecipes.userId, userId),
+        eq(favoriteRecipes.recipeId, recipeId)
+      ));
+  }
+
+  async isRecipeFavorite(userId: string, recipeId: number): Promise<boolean> {
+    const [favorite] = await db
+      .select()
+      .from(favoriteRecipes)
+      .where(and(
+        eq(favoriteRecipes.userId, userId),
+        eq(favoriteRecipes.recipeId, recipeId)
+      ))
+      .limit(1);
+    return !!favorite;
   }
 }
 

@@ -200,3 +200,7 @@ export type NutritionalGoal = typeof nutritionalGoals.$inferSelect;
 export type InsertNutritionalGoal = z.infer<typeof insertNutritionalGoalSchema>;
 export type MealEntry = typeof mealEntries.$inferSelect;
 export type InsertMealEntry = z.infer<typeof insertMealEntrySchema>;
+export type UserProfile = typeof userProfiles.$inferSelect;
+export type InsertUserProfile = z.infer<typeof insertUserProfileSchema>;
+export type FavoriteRecipe = typeof favoriteRecipes.$inferSelect;
+export type InsertFavoriteRecipe = z.infer<typeof insertFavoriteRecipeSchema>;

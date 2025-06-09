@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { recipeSearchSchema, nutritionalGoalSchema, mealEntrySchema } from "@shared/schema";
+import { recipeSearchSchema, nutritionalGoalSchema, mealEntrySchema, userProfileSchema } from "@shared/schema";
 import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -166,6 +166,102 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(summary);
     } catch (error) {
       res.status(500).json({ message: "Error fetching daily nutrition summary" });
+    }
+  });
+
+  // User Profile API
+  app.get("/api/profile", async (req, res) => {
+    try {
+      const userId = req.query.userId as string || "default_user";
+      const profile = await storage.getUserProfile(userId);
+      res.json(profile);
+    } catch (error) {
+      res.status(500).json({ message: "Error fetching user profile" });
+    }
+  });
+
+  app.post("/api/profile", async (req, res) => {
+    try {
+      const profileData = userProfileSchema.parse(req.body);
+      const profile = await storage.createUserProfile({
+        ...profileData,
+        userId: "default_user"
+      });
+      res.json(profile);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ message: "Invalid profile data", errors: error.errors });
+      } else {
+        res.status(500).json({ message: "Error creating user profile" });
+      }
+    }
+  });
+
+  app.put("/api/profile", async (req, res) => {
+    try {
+      const profileData = userProfileSchema.partial().parse(req.body);
+      const userId = "default_user";
+      const profile = await storage.updateUserProfile(userId, profileData);
+      res.json(profile);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ message: "Invalid profile data", errors: error.errors });
+      } else {
+        res.status(500).json({ message: "Error updating user profile" });
+      }
+    }
+  });
+
+  // Favorite Recipes API
+  app.get("/api/favorites", async (req, res) => {
+    try {
+      const userId = req.query.userId as string || "default_user";
+      const favorites = await storage.getFavoriteRecipes(userId);
+      res.json(favorites);
+    } catch (error) {
+      res.status(500).json({ message: "Error fetching favorite recipes" });
+    }
+  });
+
+  app.post("/api/favorites/:recipeId", async (req, res) => {
+    try {
+      const recipeId = parseInt(req.params.recipeId);
+      const userId = "default_user";
+      if (isNaN(recipeId)) {
+        return res.status(400).json({ message: "Invalid recipe ID" });
+      }
+      const favorite = await storage.addFavoriteRecipe(userId, recipeId);
+      res.json(favorite);
+    } catch (error) {
+      res.status(500).json({ message: "Error adding favorite recipe" });
+    }
+  });
+
+  app.delete("/api/favorites/:recipeId", async (req, res) => {
+    try {
+      const recipeId = parseInt(req.params.recipeId);
+      const userId = "default_user";
+      if (isNaN(recipeId)) {
+        return res.status(400).json({ message: "Invalid recipe ID" });
+      }
+      await storage.removeFavoriteRecipe(userId, recipeId);
+      res.json({ message: "Favorite recipe removed successfully" });
+    } catch (error) {
+      res.status(500).json({ message: "Error removing favorite recipe" });
+    }
+  });
+
+  app.get("/api/favorites/:recipeId/check", async (req, res) => {
+    try {
+      const recipeId = parseInt(req.params.recipeId);
+      const userId = "default_user";
+      if (isNaN(recipeId)) {
+        return res.status(400).json({ message: "Invalid recipe ID" });
+      }
+      const isFavorite = await storage.isRecipeFavorite(userId, recipeId);
+      res.json({ isFavorite });
+    } catch (error) {
+      res.status(500).json({ message: "Error checking favorite status" });
     }
   });
 
