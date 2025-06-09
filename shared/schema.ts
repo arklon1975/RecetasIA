@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, json, decimal } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, json, decimal, doublePrecision } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -56,6 +56,35 @@ export const mealEntries = pgTable("meal_entries", {
   createdAt: text("created_at").notNull().default("now()"),
 });
 
+// User profiles table for extended user information
+export const userProfiles = pgTable("user_profiles", {
+  id: serial("id").primaryKey(),
+  userId: text("user_id").notNull().default("default_user"),
+  age: integer("age"),
+  height: integer("height"), // in centimeters
+  weight: doublePrecision("weight"), // in kilograms
+  gender: text("gender", { enum: ["Masculino", "Femenino", "Otro"] }),
+  activityLevel: text("activity_level", { 
+    enum: ["Sedentario", "Ligero", "Moderado", "Activo", "Muy Activo"] 
+  }).default("Moderado"),
+  goal: text("goal", { 
+    enum: ["Mantener peso", "Perder peso", "Ganar peso", "Ganar masa muscular"] 
+  }).default("Mantener peso"),
+  restrictions: json("restrictions").$type<string[]>().default([]),
+  allergies: json("allergies").$type<string[]>().default([]),
+  preferences: json("preferences").$type<string[]>().default([]),
+  createdAt: text("created_at").notNull().default("now()"),
+  updatedAt: text("updated_at").notNull().default("now()"),
+});
+
+// Favorite recipes table
+export const favoriteRecipes = pgTable("favorite_recipes", {
+  id: serial("id").primaryKey(),
+  userId: text("user_id").notNull().default("default_user"),
+  recipeId: integer("recipe_id").notNull().references(() => recipes.id),
+  createdAt: text("created_at").notNull().default("now()"),
+});
+
 export interface RecipeIngredient {
   name: string;
   amount: string;
@@ -96,6 +125,17 @@ export const insertMealEntrySchema = createInsertSchema(mealEntries).omit({
   createdAt: true,
 });
 
+export const insertUserProfileSchema = createInsertSchema(userProfiles).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertFavoriteRecipeSchema = createInsertSchema(favoriteRecipes).omit({
+  id: true,
+  createdAt: true,
+});
+
 export const recipeSearchSchema = z.object({
   ingredient1: z.string().min(1, "Ingredient 1 is required"),
   ingredient2: z.string().min(1, "Ingredient 2 is required"),
@@ -105,6 +145,18 @@ export const recipeSearchSchema = z.object({
   difficulty: z.string().optional(),
   maxCost: z.number().optional(),
   sortBy: z.enum(["health", "time", "cost", "difficulty"]).default("health"),
+});
+
+export const userProfileSchema = z.object({
+  age: z.number().min(10).max(120).optional(),
+  height: z.number().min(100).max(250).optional(), // cm
+  weight: z.number().min(30).max(300).optional(), // kg
+  gender: z.enum(["Masculino", "Femenino", "Otro"]).optional(),
+  activityLevel: z.enum(["Sedentario", "Ligero", "Moderado", "Activo", "Muy Activo"]).default("Moderado"),
+  goal: z.enum(["Mantener peso", "Perder peso", "Ganar peso", "Ganar masa muscular"]).default("Mantener peso"),
+  restrictions: z.array(z.string()).default([]),
+  allergies: z.array(z.string()).default([]),
+  preferences: z.array(z.string()).default([]),
 });
 
 export const nutritionalGoalSchema = z.object({
