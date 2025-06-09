@@ -1,0 +1,170 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: hsl(0, 0%, 100%);
+  --foreground: hsl(20, 14.3%, 4.1%);
+  --muted: hsl(60, 4.8%, 95.9%);
+  --muted-foreground: hsl(25, 5.3%, 44.7%);
+  --popover: hsl(0, 0%, 100%);
+  --popover-foreground: hsl(20, 14.3%, 4.1%);
+  --card: hsl(0, 0%, 100%);
+  --card-foreground: hsl(20, 14.3%, 4.1%);
+  --border: hsl(20, 5.9%, 90%);
+  --input: hsl(20, 5.9%, 90%);
+  --primary: hsl(122, 40%, 49%);
+  --primary-foreground: hsl(210, 40%, 98%);
+  --secondary: hsl(60, 4.8%, 95.9%);
+  --secondary-foreground: hsl(24, 9.8%, 10%);
+  --accent: hsl(60, 4.8%, 95.9%);
+  --accent-foreground: hsl(24, 9.8%, 10%);
+  --destructive: hsl(0, 84.2%, 60.2%);
+  --destructive-foreground: hsl(60, 9.1%, 97.8%);
+  --ring: hsl(20, 14.3%, 4.1%);
+  --radius: 0.5rem;
+  
+  /* Custom colors matching the design */
+  --primary-green: hsl(122, 40%, 49%);
+  --secondary-orange: hsl(14, 100%, 60%);
+  --accent-blue: hsl(207, 90%, 54%);
+  --success-green: hsl(122, 40%, 49%);
+  --warning-orange: hsl(36, 100%, 50%);
+  --error-red: hsl(4, 90%, 58%);
+  --neutral-50: hsl(0, 0%, 96%);
+  --neutral-100: hsl(0, 0%, 88%);
+  --neutral-400: hsl(0, 0%, 46%);
+  --neutral-800: hsl(216, 13%, 13%);
+}
+
+.dark {
+  --background: hsl(240, 10%, 3.9%);
+  --foreground: hsl(0, 0%, 98%);
+  --muted: hsl(240, 3.7%, 15.9%);
+  --muted-foreground: hsl(240, 5%, 64.9%);
+  --popover: hsl(240, 10%, 3.9%);
+  --popover-foreground: hsl(0, 0%, 98%);
+  --card: hsl(240, 10%, 3.9%);
+  --card-foreground: hsl(0, 0%, 98%);
+  --border: hsl(240, 3.7%, 15.9%);
+  --input: hsl(240, 3.7%, 15.9%);
+  --primary: hsl(122, 40%, 49%);
+  --primary-foreground: hsl(211, 100%, 99%);
+  --secondary: hsl(240, 3.7%, 15.9%);
+  --secondary-foreground: hsl(0, 0%, 98%);
+  --accent: hsl(240, 3.7%, 15.9%);
+  --accent-foreground: hsl(0, 0%, 98%);
+  --destructive: hsl(0, 62.8%, 30.6%);
+  --destructive-foreground: hsl(0, 0%, 98%);
+  --ring: hsl(240, 4.9%, 83.9%);
+  --radius: 0.5rem;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply font-sans antialiased bg-background text-foreground;
+    font-family: 'Inter', sans-serif;
+  }
+}
+
+@layer utilities {
+  .text-primary-green {
+    color: var(--primary-green);
+  }
+  
+  .text-secondary-orange {
+    color: var(--secondary-orange);
+  }
+  
+  .text-accent-blue {
+    color: var(--accent-blue);
+  }
+  
+  .text-success-green {
+    color: var(--success-green);
+  }
+  
+  .text-warning-orange {
+    color: var(--warning-orange);
+  }
+  
+  .text-error-red {
+    color: var(--error-red);
+  }
+  
+  .text-neutral-50 {
+    color: var(--neutral-50);
+  }
+  
+  .text-neutral-100 {
+    color: var(--neutral-100);
+  }
+  
+  .text-neutral-400 {
+    color: var(--neutral-400);
+  }
+  
+  .text-neutral-800 {
+    color: var(--neutral-800);
+  }
+  
+  .bg-primary-green {
+    background-color: var(--primary-green);
+  }
+  
+  .bg-secondary-orange {
+    background-color: var(--secondary-orange);
+  }
+  
+  .bg-accent-blue {
+    background-color: var(--accent-blue);
+  }
+  
+  .bg-success-green {
+    background-color: var(--success-green);
+  }
+  
+  .bg-warning-orange {
+    background-color: var(--warning-orange);
+  }
+  
+  .bg-error-red {
+    background-color: var(--error-red);
+  }
+  
+  .bg-neutral-50 {
+    background-color: var(--neutral-50);
+  }
+  
+  .bg-neutral-100 {
+    background-color: var(--neutral-100);
+  }
+  
+  .bg-neutral-400 {
+    background-color: var(--neutral-400);
+  }
+  
+  .bg-neutral-800 {
+    background-color: var(--neutral-800);
+  }
+  
+  .border-neutral-100 {
+    border-color: var(--neutral-100);
+  }
+  
+  .border-neutral-400 {
+    border-color: var(--neutral-400);
+  }
+  
+  .hover\:bg-primary-green:hover {
+    background-color: hsl(122, 40%, 44%);
+  }
+  
+  .focus\:ring-primary-green:focus {
+    --tw-ring-color: var(--primary-green);
+  }
+}
