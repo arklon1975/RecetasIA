@@ -8,6 +8,7 @@ import { ChefHat, Target } from "lucide-react";
 import Home from "@/pages/Home";
 import NutritionTracker from "@/pages/NutritionTracker";
 import NotFound from "@/pages/not-found";
+import FloatingTimer from "@/components/FloatingTimer";
 
 function Navigation() {
   const [location] = useLocation();

@@ -1,8 +1,10 @@
+import { useState } from "react";
 import { Recipe } from "@shared/schema";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { X, List, ChefHat, PieChart, DollarSign, Clock } from "lucide-react";
+import { X, List, ChefHat, PieChart, DollarSign, Clock, Timer } from "lucide-react";
+import CookingTimer from "./CookingTimer";
 
 interface RecipeModalProps {
   recipe: Recipe;
@@ -10,6 +12,9 @@ interface RecipeModalProps {
 }
 
 export default function RecipeModal({ recipe, onClose }: RecipeModalProps) {
+  const [showTimer, setShowTimer] = useState(false);
+  const [timerStep, setTimerStep] = useState("");
+  const [timerMinutes, setTimerMinutes] = useState(0);
   const totalTime = recipe.prepTime + recipe.cookTime;
 
   return (
@@ -75,12 +80,29 @@ export default function RecipeModal({ recipe, onClose }: RecipeModalProps) {
                     <div className="w-8 h-8 bg-primary-green text-white rounded-full flex items-center justify-center text-sm font-medium flex-shrink-0">
                       {step.stepNumber}
                     </div>
-                    <div>
+                    <div className="flex-1">
                       <p className="text-neutral-800">{step.instruction}</p>
-                      <span className="text-xs text-neutral-400 mt-1 block flex items-center">
-                        <Clock className="w-3 h-3 mr-1" />
-                        {step.timeMinutes} minutos
-                      </span>
+                      <div className="flex items-center justify-between mt-2">
+                        <span className="text-xs text-neutral-400 flex items-center">
+                          <Clock className="w-3 h-3 mr-1" />
+                          {step.timeMinutes} minutos
+                        </span>
+                        {step.timeMinutes > 0 && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => {
+                              setTimerStep(`Paso ${step.stepNumber}`);
+                              setTimerMinutes(step.timeMinutes);
+                              setShowTimer(true);
+                            }}
+                            className="text-xs px-2 py-1 h-6 bg-primary-green bg-opacity-10 hover:bg-primary-green hover:text-white border-primary-green text-primary-green"
+                          >
+                            <Timer className="w-3 h-3 mr-1" />
+                            Timer
+                          </Button>
+                        )}
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -131,8 +153,37 @@ export default function RecipeModal({ recipe, onClose }: RecipeModalProps) {
               </div>
             </div>
           </div>
+
+          {/* Quick Timer Section */}
+          <div className="mt-6 p-4 bg-gradient-to-r from-primary-green to-green-600 rounded-lg">
+            <div className="flex items-center justify-between text-white">
+              <div>
+                <h4 className="font-medium">Temporizador Rápido</h4>
+                <p className="text-sm text-green-100">Inicia un timer personalizado</p>
+              </div>
+              <Button
+                onClick={() => {
+                  setTimerStep("Temporizador personalizado");
+                  setTimerMinutes(10);
+                  setShowTimer(true);
+                }}
+                className="bg-white text-primary-green hover:bg-neutral-100"
+              >
+                <Timer className="w-4 h-4 mr-2" />
+                Abrir Timer
+              </Button>
+            </div>
+          </div>
         </div>
       </DialogContent>
+
+      {/* Cooking Timer Modal */}
+      <CookingTimer
+        isOpen={showTimer}
+        onClose={() => setShowTimer(false)}
+        initialMinutes={timerMinutes}
+        stepName={timerStep}
+      />
     </Dialog>
   );
 }
