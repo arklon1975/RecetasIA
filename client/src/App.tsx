@@ -4,10 +4,11 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
-import { ChefHat, Target, User } from "lucide-react";
+import { ChefHat, Target, User, Sparkles } from "lucide-react";
 import Home from "@/pages/Home";
 import NutritionTracker from "@/pages/NutritionTracker";
 import UserProfile from "@/pages/UserProfile";
+import AIRecipes from "@/pages/AIRecipes";
 import NotFound from "@/pages/not-found";
 import FloatingTimer from "@/components/FloatingTimer";
 
@@ -34,6 +35,16 @@ function Navigation() {
                 >
                   <ChefHat className="w-4 h-4 mr-2" />
                   Recetas
+                </Button>
+              </Link>
+
+              <Link href="/ai-recipes">
+                <Button
+                  variant={location === "/ai-recipes" ? "default" : "ghost"}
+                  className={location === "/ai-recipes" ? "bg-purple-600 hover:bg-purple-700 text-white" : "text-purple-600 hover:text-purple-700 hover:bg-purple-50"}
+                >
+                  <Sparkles className="w-4 h-4 mr-2" />
+                  IA Recetas
                 </Button>
               </Link>
               
@@ -70,6 +81,7 @@ function Router() {
       <Navigation />
       <Switch>
         <Route path="/" component={Home} />
+        <Route path="/ai-recipes" component={AIRecipes} />
         <Route path="/nutrition" component={NutritionTracker} />
         <Route path="/profile" component={UserProfile} />
         <Route component={NotFound} />

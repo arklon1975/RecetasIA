@@ -3,6 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { recipeSearchSchema, nutritionalGoalSchema, mealEntrySchema, userProfileSchema } from "@shared/schema";
 import { z } from "zod";
+import { generateRecipe, generateRecipeSuggestions, type RecipeGenerationParams } from "./openai";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Search recipes based on ingredients and filters
@@ -262,6 +263,65 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ isFavorite });
     } catch (error) {
       res.status(500).json({ message: "Error checking favorite status" });
+    }
+  });
+
+  // AI Recipe Generation API
+  app.post("/api/ai/generate-recipe", async (req, res) => {
+    try {
+      const params: RecipeGenerationParams = req.body;
+      
+      // Validar parámetros básicos
+      if (!params.ingredients || params.ingredients.length === 0) {
+        return res.status(400).json({ 
+          message: "Se requiere al menos un ingrediente para generar la receta" 
+        });
+      }
+
+      const recipe = await generateRecipe(params);
+      res.json(recipe);
+    } catch (error) {
+      console.error('Error generating AI recipe:', error);
+      if (error instanceof Error) {
+        if (error.message.includes('OpenAI API key')) {
+          res.status(500).json({ 
+            message: "Servicio de IA no configurado. Contacta al administrador." 
+          });
+        } else {
+          res.status(500).json({ 
+            message: "Error generando receta con IA: " + error.message 
+          });
+        }
+      } else {
+        res.status(500).json({ 
+          message: "Error interno del servidor" 
+        });
+      }
+    }
+  });
+
+  app.post("/api/ai/recipe-suggestions", async (req, res) => {
+    try {
+      const userPreferences = req.body;
+      const suggestions = await generateRecipeSuggestions(userPreferences);
+      res.json({ suggestions });
+    } catch (error) {
+      console.error('Error generating recipe suggestions:', error);
+      if (error instanceof Error) {
+        if (error.message.includes('OpenAI API key')) {
+          res.status(500).json({ 
+            message: "Servicio de IA no configurado. Contacta al administrador." 
+          });
+        } else {
+          res.status(500).json({ 
+            message: "Error generando sugerencias: " + error.message 
+          });
+        }
+      } else {
+        res.status(500).json({ 
+          message: "Error interno del servidor" 
+        });
+      }
     }
   });
 
