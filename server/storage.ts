@@ -251,11 +251,7 @@ export class DatabaseStorage implements IStorage {
   async createUserProfile(profile: InsertUserProfile): Promise<UserProfile> {
     const [newProfile] = await db
       .insert(userProfiles)
-      .values({
-        ...profile,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      })
+      .values(profile)
       .returning();
     return newProfile;
   }
@@ -263,10 +259,7 @@ export class DatabaseStorage implements IStorage {
   async updateUserProfile(userId: string, profileUpdate: Partial<InsertUserProfile>): Promise<UserProfile> {
     const [updatedProfile] = await db
       .update(userProfiles)
-      .set({
-        ...profileUpdate,
-        updatedAt: new Date().toISOString(),
-      })
+      .set(profileUpdate)
       .where(eq(userProfiles.userId, userId))
       .returning();
     return updatedProfile;
